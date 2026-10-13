@@ -13,7 +13,7 @@
 | `systemctl list-units` doesn't show Hermes | It's a **user** service | `systemctl --user ...` |
 | `systemctl status` output gets cut off / pager | Pager plus line truncation | Press `q`. Use `--no-pager -l` |
 | `proxy.enabled is true but iron-proxy is not configured` | Egress proxy enabled, never set up | `hermes egress setup` |
-| `iron-proxy is enabled but not running on port 9090` | Proxy not started (or reboot) | `hermes egress start` |
+| `iron-proxy is enabled but not running on port 9090` | Proxy not started, e.g. after a reboot | `hermes egress start`. To make it permanent, set up the `hermes-egress` user service ([04](04-docker-backend-and-composio.md)) |
 | Sandbox gets 403 for every site | Host not on the allowlist | Add it to `proxy.extra_allowed_hosts`, then `hermes egress setup && hermes egress reload` |
 | Agent asks for a GitHub PAT or API key in chat | It's working around a broken environment | Fix the environment. Don't paste secrets into Telegram |
 | "Stream stale for 180s" in logs | Model API stream stalled | Usually transient; retry. **TODO:** watch whether it recurs |

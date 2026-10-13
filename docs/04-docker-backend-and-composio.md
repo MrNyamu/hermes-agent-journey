@@ -111,9 +111,9 @@ hermes egress status
 
 Adding hosts is mostly a one-time cost for registries and download CDNs. The agent's web search and page fetching run host-side and aren't affected by this list.
 
-### Start on boot (TODO: not done yet)
+### Start on boot ✅
 
-The gateway refuses to create sandboxes while the proxy is down (`enforce_on_docker: true`), and nothing starts the proxy at boot. Planned user unit:
+The gateway refuses to create sandboxes while the proxy is down (`enforce_on_docker: true`), and Hermes doesn't start the proxy at boot. This user unit fixes that:
 
 ```ini
 # ~/.config/systemd/user/hermes-egress.service
@@ -124,8 +124,8 @@ Before=hermes-gateway.service
 [Service]
 Type=oneshot
 RemainAfterExit=yes
-ExecStart=<path-to-hermes> egress start
-ExecStop=<path-to-hermes> egress stop
+ExecStart=/home/<user>/.local/bin/hermes egress start   # use the output of `which hermes`
+ExecStop=/home/<user>/.local/bin/hermes egress stop
 
 [Install]
 WantedBy=default.target
@@ -133,8 +133,22 @@ WantedBy=default.target
 
 ```bash
 systemctl --user daemon-reload && systemctl --user enable hermes-egress
-sudo loginctl enable-linger <user>
+sudo loginctl enable-linger <user>        # start user services at boot, without logging in
+loginctl show-user <user> -p Linger       # expect Linger=yes
 ```
+
+**Test it before rebooting.** This hands the running proxy over to systemd:
+
+```bash
+hermes egress stop
+systemctl --user start hermes-egress
+systemctl --user status hermes-egress --no-pager | grep -E 'Active|code='
+hermes egress status
+```
+
+Expect `Active: active (exited)` with `status=0/SUCCESS`. "Exited" is correct here: `egress start` launches the daemon and returns. `hermes egress status` should show `Listening: yes`.
+
+**Reboot test (passed):** after `sudo reboot`, both `hermes-egress` and `hermes-gateway` came up on their own, the proxy was listening, and after `/new` in Telegram the agent reused the existing Composio login to list GitHub notifications without reinstalling anything.
 
 ## Result ✅
 
@@ -146,6 +160,6 @@ After a `/new` session and a retry, the Composio CLI installed, `composio login`
 
 ## Next
 
-- ✅ Composio login persistence: stored on the host via the `/root` bind mount (see above). Still to test it across a full VPS reboot.
+- ✅ Composio login persistence: stored on the host via the `/root` bind mount, and confirmed across a full VPS reboot.
 - **TODO:** evaluate the Composio MCP route as the long-term setup.
-- **TODO:** set up the egress boot service and test it with a reboot.
+- ✅ Egress boot service set up and reboot-tested.
