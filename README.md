@@ -15,14 +15,15 @@ The goal is to learn how agents are built, tuned and wired into real workflows. 
 | Model | Claude Sonnet via my Claude account (orchestrator) |
 | Chat client | Telegram bot, via the Hermes gateway (`hermes-gateway.service`, systemd user unit) |
 | Tool sandbox | Docker terminal backend |
-| Integrations | Composio for GitHub (in progress) |
+| Egress | iron-proxy firewall, allowlisted hosts only |
+| Integrations | Composio CLI → GitHub ✅ |
 
 ## Journal
 
 1. [VPS access and hardening](docs/01-vps-access-and-hardening.md): SSH keys, a non-root user, locking down sshd, firewall
 2. [Local models on 8 GB: what's realistic](docs/02-local-models.md): Carnice, llama.cpp, and why training happens elsewhere
 3. [Hermes + Claude + Telegram](docs/03-hermes-telegram.md): the gateway service and how to manage it
-4. [Docker backend and Composio/GitHub](docs/04-docker-backend-and-composio.md): the "no terminal access" wall and how it was fixed
+4. [Docker, iron-proxy and Composio/GitHub](docs/04-docker-backend-and-composio.md): from "no terminal access" to the first GitHub notifications
 5. [Troubleshooting cheatsheet](docs/troubleshooting.md): symptoms, causes and fixes, for quick lookup
 
 ## Conventions for these notes

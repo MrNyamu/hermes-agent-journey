@@ -63,9 +63,85 @@ When it's working, the docker GID (`988` here) is in the gateway's groups, `dock
 - **Composio's login lives in the container.** The CLI is installed inside Hermes's sandbox container. If the container is recreated, the login may be lost. A more durable option is to add Composio as an **MCP server** in `~/.hermes/config.yaml`, so the login lives in Hermes's config.
 - **Output mount warning.** On startup the gateway warns: *"Docker backend is enabled ... but no explicit host-visible output mount ... is configured."* This only matters for sending files back over Telegram. **TODO:** add a mount such as `~/.hermes/cache/documents:/output` when file delivery is needed.
 
+## Wall 2: the iron-proxy egress firewall
+
+With Docker working, the agent failed differently:
+
+1. `proxy.enabled is true but iron-proxy is not configured` → run `hermes egress setup`
+2. `iron-proxy is enabled but not running on port 9090` → run `hermes egress start`
+3. Every outbound request returned **403** → the proxy was running, but its allowlist only covers the model providers
+
+### What iron-proxy is
+
+It's a host-side firewall for the Docker sandbox ([docs](https://hermes-agent.nousresearch.com/docs/user-guide/egress/iron-proxy)):
+
+- The sandbox only holds **placeholder tokens**. The proxy swaps in the real API keys on the host, so a prompt-injected agent can't leak keys it never sees.
+- **Default-deny allowlist.** Unlisted hosts get a 403. Private, loopback and cloud-metadata addresses are always blocked.
+- It intercepts TLS using a local CA (`~/.hermes/proxy/ca.crt`). Never let `ca.key` leave the host.
+- It does **not** stop data being sent to an allowlisted host. Keep the list short.
+
+### Allowing hosts
+
+Edit `~/.hermes/config.yaml`, **not** `proxy.yaml` (it's regenerated):
+
+```yaml
+proxy:
+  enabled: true
+  extra_allowed_hosts:
+    - composio.dev
+    - "*.composio.dev"          # wildcards match subdomains only
+    - github.com
+    - api.github.com
+    - raw.githubusercontent.com
+    - objects.githubusercontent.com
+    - release-assets.githubusercontent.com   # Composio binary CDN
+    - pypi.org
+    - files.pythonhosted.org                 # actual pip downloads
+```
+
+```bash
+hermes egress setup     # regenerate proxy.yaml
+hermes egress reload    # hot-reload rules (or: hermes egress restart)
+hermes egress status
+```
+
+Adding hosts is mostly a one-time cost for registries and download CDNs. The agent's web search and page fetching run host-side and aren't affected by this list.
+
+### Start on boot (TODO: not done yet)
+
+The gateway refuses to create sandboxes while the proxy is down (`enforce_on_docker: true`), and nothing starts the proxy at boot. Planned user unit:
+
+```ini
+# ~/.config/systemd/user/hermes-egress.service
+[Unit]
+Description=Hermes iron-proxy egress firewall
+Before=hermes-gateway.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=<path-to-hermes> egress start
+ExecStop=<path-to-hermes> egress stop
+
+[Install]
+WantedBy=default.target
+```
+
+```bash
+systemctl --user daemon-reload && systemctl --user enable hermes-egress
+sudo loginctl enable-linger <user>
+```
+
+## Result ✅
+
+After a `/new` session and a retry, the Composio CLI installed, `composio login` completed, and the agent pulled 50 GitHub notifications (the first page). These included PR activity, review requests and recurring CI failures.
+
+**Lessons:**
+- The agent will **propose workarounds that weaken security**, such as "just give me a PAT", or claiming another tool has "a separate network stack". Fix the environment instead.
+- Each fix revealed the next layer: Docker missing → group permissions → stale systemd groups → proxy not configured → proxy not running → allowlist. Read the *exact* error each time.
+
 ## Next
 
-1. Run `/new` in Telegram, then resend the Composio prompt.
-2. Complete `composio login`. It prints a URL to approve in the browser.
-3. **TODO:** record the result, and whether the login survives a gateway restart.
-4. **TODO:** evaluate the Composio MCP route as the long-term setup.
+- **TODO:** confirm the Composio login survives a gateway restart or container recreation. Its output was written under `/tmp` in the sandbox.
+- **TODO:** evaluate the Composio MCP route as the long-term setup.
+- **TODO:** set up the egress boot service and test it with a reboot.
