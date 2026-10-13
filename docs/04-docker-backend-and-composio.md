@@ -60,7 +60,10 @@ When it's working, the docker GID (`988` here) is in the gateway's groups, `dock
 
 ## Known side effects of the Docker backend
 
-- **Composio's login lives in the container.** The CLI is installed inside Hermes's sandbox container. If the container is recreated, the login may be lost. A more durable option is to add Composio as an **MCP server** in `~/.hermes/config.yaml`, so the login lives in Hermes's config.
+- **Where Composio's login lives (confirmed).** The sandbox's `/root` is a bind mount of the host folder `~/.hermes/sandboxes/docker/default/home`. Composio installs to `~/.composio/` there, and its credentials are in `user_data.json`, readable only by root. So the login **persists on the host** and survives the container being recreated. Treat that host folder as secret: keep it out of backups you share and out of this repo.
+  - Check the mounts with: `docker inspect -f '{{range .Mounts}}{{.Source}} -> {{.Destination}}{{"\n"}}{{end}}' <container>`
+  - `composio` isn't on the sandbox PATH. It lives at `~/.composio/composio`.
+  - A `/restart` from Telegram reuses the running container. It was "Up 12 hours" across a gateway restart.
 - **Output mount warning.** On startup the gateway warns: *"Docker backend is enabled ... but no explicit host-visible output mount ... is configured."* This only matters for sending files back over Telegram. **TODO:** add a mount such as `~/.hermes/cache/documents:/output` when file delivery is needed.
 
 ## Wall 2: the iron-proxy egress firewall
@@ -142,6 +145,6 @@ After a `/new` session and a retry, the Composio CLI installed, `composio login`
 
 ## Next
 
-- **TODO:** confirm the Composio login survives a gateway restart or container recreation. Its output was written under `/tmp` in the sandbox.
+- ✅ Composio login persistence: stored on the host via the `/root` bind mount (see above). Still to test it across a full VPS reboot.
 - **TODO:** evaluate the Composio MCP route as the long-term setup.
 - **TODO:** set up the egress boot service and test it with a reboot.
