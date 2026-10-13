@@ -64,7 +64,8 @@ When it's working, the docker GID (`988` here) is in the gateway's groups, `dock
   - Check the mounts with: `docker inspect -f '{{range .Mounts}}{{.Source}} -> {{.Destination}}{{"\n"}}{{end}}' <container>`
   - `composio` isn't on the sandbox PATH. It lives at `~/.composio/composio`.
   - A `/restart` from Telegram reuses the running container. It was "Up 12 hours" across a gateway restart.
-- **Output mount warning.** On startup the gateway warns: *"Docker backend is enabled ... but no explicit host-visible output mount ... is configured."* This only matters for sending files back over Telegram. **TODO:** add a mount such as `~/.hermes/cache/documents:/output` when file delivery is needed.
+- **Output mount warning.** On startup the gateway warns: *"Docker backend is enabled ... but no explicit host-visible output mount ... is configured."* This only matters for sending files back over Telegram. The container already mounts `~/.hermes/cache/documents` (and other cache folders), so file delivery should work. **TODO:** confirm by asking Hermes to send a file.
+- **Workspace location.** The sandbox's `/workspace` is `~/.hermes/sandboxes/docker/default/workspace` on the host. It persists, but files the agent creates are owned by `root` (the agent runs as root in the container). Run `sudo chown -R <user>:<user>` on that folder if you need to edit them.
 
 ## Wall 2: the iron-proxy egress firewall
 
