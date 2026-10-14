@@ -1,0 +1,12 @@
+#!/bin/sh
+# Print the GitHub token for an owner (default: owner of the current repo's origin).
+# Tokens live in ~/.tokens/<owner-lowercase>, one file per owner, mode 600.
+owner="$1"
+if [ -z "$owner" ]; then
+  url=$(git remote get-url origin 2>/dev/null) || { echo "ghtok: no owner given and not in a git repo" >&2; exit 1; }
+  owner=$(printf '%s' "$url" | sed -E 's#^(https://github.com/|git@github.com:)##; s#/.*##')
+fi
+owner=$(printf '%s' "$owner" | tr 'A-Z' 'a-z')
+f="$HOME/.tokens/$owner"
+[ -r "$f" ] || { echo "ghtok: no token for '$owner'" >&2; exit 1; }
+cat "$f"
