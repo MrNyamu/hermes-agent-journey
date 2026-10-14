@@ -16,6 +16,11 @@
 | `iron-proxy is enabled but not running on port 9090` | Proxy not started, e.g. after a reboot | `hermes egress start`. To make it permanent, set up the `hermes-egress` user service ([04](04-docker-backend-and-composio.md)) |
 | Sandbox gets 403 for every site | Host not on the allowlist | Add it to `proxy.extra_allowed_hosts`, then `hermes egress setup && hermes egress reload` |
 | Agent asks for a GitHub PAT or API key in chat | It's working around a broken environment | Fix the environment. Don't paste secrets into Telegram |
+| `ghtok: no owner given and not in a git repo` | `gh` run outside a repo | Set `GH_OWNER=<owner>` or pass `-R owner/repo` ([05](05-github-identity-and-guardrails.md)) |
+| `ghtok: no token for '<owner>'` | No token file for that owner | Add `~/.tokens/<owner>` over SSH |
+| Unknown user shows as commit author or PR participant | Wrong numeric ID in the noreply email | Set the correct `<id>+<login>@users.noreply.github.com`, amend with `--reset-author`, force-push the PR branch only |
+| Agent insists it can't do something you've already fixed | Outdated note in its persistent memory | Tell it to remove the note, then make it prove the fix with a command |
+| Org missing from "Resource owner" when creating a token | Org doesn't allow fine-grained tokens | Org owner enables it under org Settings → Personal access tokens |
 | "Stream stale for 180s" in logs | Model API stream stalled | Usually transient; retry. **TODO:** watch whether it recurs |
 | llama-server killed | Out of memory on 8 GB | Smaller quant, or `-c` at 8k or less ([02](02-local-models.md)) |
 

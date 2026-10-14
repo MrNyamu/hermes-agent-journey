@@ -162,4 +162,5 @@ After a `/new` session and a retry, the Composio CLI installed, `composio login`
 
 - ✅ Composio login persistence: stored on the host via the `/root` bind mount, and confirmed across a full VPS reboot.
 - **TODO:** evaluate the Composio MCP route as the long-term setup.
+- **Update:** GitHub was later moved off Composio to plain `git` + `gh` with per-owner tokens. Composio stays for SaaS integrations. See [05](05-github-identity-and-guardrails.md).
 - ✅ Egress boot service set up and reboot-tested.

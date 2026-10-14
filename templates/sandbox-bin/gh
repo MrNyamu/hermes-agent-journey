@@ -1,0 +1,12 @@
+#!/bin/sh
+# Wrapper around the real gh: sets GH_TOKEN for the right owner.
+# Owner comes from GH_OWNER, -R/--repo owner/repo, or the current repo's origin.
+owner="$GH_OWNER"
+prev=""; for a in "$@"; do
+  case "$prev" in -R|--repo) owner="${a%%/*}";; esac
+  case "$a" in --repo=*) r="${a#--repo=}"; owner="${r%%/*}";; esac
+  prev="$a"
+done
+GH_TOKEN=$(/root/bin/ghtok "$owner" 2>/dev/null) || unset GH_TOKEN
+export GH_TOKEN
+exec /root/.local/gh/bin/gh "$@"
