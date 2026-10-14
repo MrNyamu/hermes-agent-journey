@@ -4,14 +4,14 @@ Field notes from self-hosting a [Hermes Agent](https://github.com/NousResearch/h
 
 The goal is to learn how agents are built, tuned and wired into real workflows. Along the way, this repo collects everything someone would need to stand up their own agent the same way, including the mistakes.
 
-> **Status:** private while it's being filled in. It will be made public once it's a usable guide.
+> **Status:** public and usable as a guide. Still being extended over time.
 
 ## The setup
 
 | Piece | Choice |
 |---|---|
 | Server | Contabo VPS, 8 GB RAM, 100 GB disk, Hermes pre-installed |
-| OS user | Non-root sudo user (`mrnyamu`). Root SSH and password login disabled |
+| OS user | Non-root sudo user (`<user>`). Root SSH and password login disabled |
 | Model | Claude Sonnet via my Claude account (orchestrator) |
 | Chat client | Telegram bot, via the Hermes gateway (`hermes-gateway.service`, systemd user unit) |
 | Tool sandbox | Docker terminal backend |
