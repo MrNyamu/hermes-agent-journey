@@ -15,6 +15,9 @@
 | `proxy.enabled is true but iron-proxy is not configured` | Egress proxy enabled, never set up | `hermes egress setup` |
 | `iron-proxy is enabled but not running on port 9090` | Proxy not started, e.g. after a reboot | `hermes egress start`. To make it permanent, set up the `hermes-egress` user service ([04](04-docker-backend-and-composio.md)) |
 | Sandbox gets 403 for every site | Host not on the allowlist | Add it to `proxy.extra_allowed_hosts`, then `hermes egress setup && hermes egress reload` |
+| `hermes egress setup` stops at Step 3: "No known provider API keys" | v0.21.7 doesn't count `ANTHROPIC_API_KEY` (or you use an account login, not a key) | Add the hosts to `~/.hermes/proxy/proxy.yaml` by hand (back it up first), then `hermes egress reload`. Keep them in `extra_allowed_hosts` too, so a future `setup` keeps them. Avoid `hermes egress restart` until you've checked it keeps the key mappings |
+| `docker exec $C ...` fails with "requires at least 1 argument" | `$C` was set in an earlier shell | Set it again: `C=$(docker ps --format '{{.Names}}' \| grep '^hermes-' \| head -1)` |
+| `pip` warns "Running pip as the 'root' user" in the sandbox | The sandbox runs as root | Harmless there. `pip install --user` puts packages in the persistent `/root/.local` |
 | Agent asks for a GitHub PAT or API key in chat | It's working around a broken environment | Fix the environment. Don't paste secrets into Telegram |
 | `ghtok: no owner given and not in a git repo` | `gh` run outside a repo | Set `GH_OWNER=<owner>` or pass `-R owner/repo` ([05](05-github-identity-and-guardrails.md)) |
 | `ghtok: no token for '<owner>'` | No token file for that owner | Add `~/.tokens/<owner>` over SSH |
