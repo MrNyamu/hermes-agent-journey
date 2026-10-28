@@ -15,6 +15,8 @@
 | `proxy.enabled is true but iron-proxy is not configured` | Egress proxy enabled, never set up | `hermes egress setup` |
 | `iron-proxy is enabled but not running on port 9090` | Proxy not started, e.g. after a reboot | `hermes egress start`. To make it permanent, set up the `hermes-egress` user service ([04](04-docker-backend-and-composio.md)) |
 | Sandbox gets 403 for every site | Host not on the allowlist | Add it to `proxy.extra_allowed_hosts`, then `hermes egress setup && hermes egress reload` |
+| Proxy was running fine, now "not running on port 9090" and every worker crashed | The host OOM killer killed iron-proxy (`systemctl --user status hermes-egress` shows `Result: oom-kill`) | `systemctl --user restart hermes-egress`, then cap parallel work with `kanban.max_in_progress` and restart the gateway ([06](06-sandbox-and-kanban-workers.md)) |
+| Several `hermes-xxxxxxxx` containers, all `sleep infinity` | Duplicates or old config hashes. Only exited ones are reaped | `docker stats --no-stream`, then `docker rm -f` the idle ones while no worker runs ([06](06-sandbox-and-kanban-workers.md)) |
 | Agent asks for a GitHub PAT or API key in chat | It's working around a broken environment | Fix the environment. Don't paste secrets into Telegram |
 | `ghtok: no owner given and not in a git repo` | `gh` run outside a repo | Set `GH_OWNER=<owner>` or pass `-R owner/repo` ([05](05-github-identity-and-guardrails.md)) |
 | `ghtok: no token for '<owner>'` | No token file for that owner | Add `~/.tokens/<owner>` over SSH |
