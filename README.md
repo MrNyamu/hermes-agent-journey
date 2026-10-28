@@ -27,7 +27,8 @@ The goal is to learn how agents are built, tuned and wired into real workflows. 
 3. [Hermes + Claude + Telegram](docs/03-hermes-telegram.md): the gateway service and how to manage it
 4. [Docker, iron-proxy and Composio/GitHub](docs/04-docker-backend-and-composio.md): from "no terminal access" to the first GitHub notifications
 5. [GitHub access, agent identity and guardrails](docs/05-github-identity-and-guardrails.md): per-owner tokens, SOUL.md and skills, branch protection, and two incidents
-6. [Troubleshooting cheatsheet](docs/troubleshooting.md): symptoms, causes and fixes, for quick lookup
+6. [How the Docker sandbox runs kanban workers](docs/06-sandbox-and-kanban-workers.md): one shared `sleep infinity` container, labels and reuse, and a night of OOM kills
+7. [Troubleshooting cheatsheet](docs/troubleshooting.md): symptoms, causes and fixes, for quick lookup
 
 ## Templates
 
